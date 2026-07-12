@@ -13,10 +13,18 @@ function App() {
           <h2>Sign in</h2>
 
           <label htmlFor="email">Email</label>
-          <input id="email" type="email" placeholder="Enter your email" />
+          <input
+            id="email"
+            type="email"
+            placeholder="Enter your email"
+          />
 
           <label htmlFor="password">Password</label>
-          <input id="password" type="password" placeholder="Enter your password" />
+          <input
+            id="password"
+            type="password"
+            placeholder="Enter your password"
+          />
 
           <button type="submit">Login</button>
 
