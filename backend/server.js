@@ -7,7 +7,8 @@ const {
   trips,
   maintenanceLogs,
   fuelLogs,
-  expenses
+  expenses,
+  users
 } = require('./components/store');
 
 dotenv.config();
@@ -35,30 +36,71 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+const normalizeRole = (role) => {
+  if (!role) return 'Fleet Manager';
+  const normalizedRole = String(role).trim().toLowerCase();
+  const roleMap = {
+    manager: 'Fleet Manager',
+    admin: 'Fleet Manager',
+    dispatcher: 'Dispatcher',
+    analyst: 'Financial Analyst',
+    'financial analyst': 'Financial Analyst',
+    'safety officer': 'Safety Officer',
+    'fleet manager': 'Fleet Manager',
+  };
+  return roleMap[normalizedRole] || role;
+};
+
 app.post('/api/auth/login', (req, res) => {
   const { email, password } = req.body;
-  if (email === 'manager@transitops.com' && password === 'password123') {
-    return res.json({
-      token: 'demo-token',
-      user: { id: 'admin-1', name: 'Transit Manager', role: 'manager', email }
-    });
+  const loginEmail = String(email || '').trim().toLowerCase();
+  const user = users.find((u) => u.email.toLowerCase() === loginEmail && u.password === password);
+
+  if (!user) {
+    return res.status(401).json({ error: 'Invalid credentials' });
   }
-  return res.status(401).json({ error: 'Invalid credentials' });
+
+  return res.json({
+    token: 'demo-token',
+    user: {
+      id: user.id,
+      name: user.name || user.email,
+      email: user.email,
+      role: normalizeRole(user.role),
+    }
+  });
 });
 
 app.get('/api/users', (req, res) => {
-  res.json([
-    { id: 'usr-1', name: 'Transit Manager', email: 'manager@transitops.com', role: 'manager' },
-    { id: 'usr-2', name: 'Ops Analyst', email: 'ops@transitops.com', role: 'analyst' }
-  ]);
+  res.json(users.map((user) => ({
+    ...user,
+    role: normalizeRole(user.role),
+    status: user.status || 'Active',
+  })));
 });
 
 app.post('/api/users', (req, res) => {
-  res.status(201).json({ message: 'User created', user: req.body });
+  const newUser = {
+    id: `usr-${Date.now()}`,
+    name: req.body.name || 'New User',
+    email: req.body.email,
+    password: req.body.password || 'temp123',
+    role: normalizeRole(req.body.role || 'Dispatcher'),
+    status: 'Active',
+  };
+
+  users.push(newUser);
+  res.status(201).json({ message: 'User created', user: newUser });
 });
 
 app.delete('/api/users/:id', (req, res) => {
-  res.json({ message: `User ${req.params.id} deleted` });
+  const index = users.findIndex((user) => user.id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+
+  users.splice(index, 1);
+  return res.json({ message: `User ${req.params.id} deleted` });
 });
 
 app.get('/api/dashboard/kpis', (req, res) => {
@@ -142,9 +184,9 @@ app.post('/api/expenses', (req, res) => {
 
 const loginHandler = (req, res) => {
   const { email, username, password } = req.body;
-  const loginEmail = email || username;
+  const loginEmail = String(email || username || '').trim().toLowerCase();
 
-  const user = users.find((u) => u.email === loginEmail && u.password === password);
+  const user = users.find((u) => u.email.toLowerCase() === loginEmail && u.password === password);
 
   if (!user) {
     return res.status(401).json({ message: 'Login failed' });
@@ -155,8 +197,9 @@ const loginHandler = (req, res) => {
     token: 'demo-token',
     user: {
       id: user.id,
+      name: user.name || user.email,
       email: user.email,
-      role: user.role,
+      role: normalizeRole(user.role),
     },
   });
 };

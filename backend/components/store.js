@@ -21,9 +21,19 @@ const expenses = [];
 const users = [
   {
     id: 'user-1',
+    name: 'Transit Manager',
     email: process.env.DEFAULT_LOGIN_EMAIL || 'manager@transitops.com',
     password: process.env.DEFAULT_LOGIN_PASSWORD || 'password123',
-    role: 'admin',
+    role: 'Fleet Manager',
+    status: 'Active',
+  },
+  {
+    id: 'user-2',
+    name: 'Ops Analyst',
+    email: 'ops@transitops.com',
+    password: 'password123',
+    role: 'Financial Analyst',
+    status: 'Active',
   },
 ];
 

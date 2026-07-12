@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
@@ -33,7 +33,18 @@ export default function UserManagement() {
   };
 
   useEffect(() => {
-    fetchUsers();
+    let isMounted = true;
+
+    const loadUsers = async () => {
+      if (!isMounted) return;
+      await fetchUsers();
+    };
+
+    loadUsers();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleCreateUser = async (e) => {
@@ -135,7 +146,7 @@ export default function UserManagement() {
                 const isCurrentUser = currentUserId && userId && currentUserId === userId;
 
                 return (
-                  <tr key={userId || u.email || Math.random()}>
+                  <tr key={userId || u.email}>
                     <td>
                       <div className="driver-avatar-cell">
                         <div className="driver-avatar">
