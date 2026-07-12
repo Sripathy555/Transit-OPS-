@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { Users, UserPlus, Trash2, Shield, Mail, CheckCircle } from 'lucide-react';
+import { Users, UserPlus, Trash2, Shield, Mail, CheckCircle, ArrowLeft, X } from 'lucide-react';
 
 export default function UserManagement() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -49,158 +51,207 @@ export default function UserManagement() {
     }
   };
 
-  if (loading) return <div className="p-8">Loading users...</div>;
+  if (loading) {
+    return (
+      <div className="app-container flex items-center justify-center min-h-screen text-[var(--text-main)] bg-[var(--bg)]">
+        <div className="text-lg font-medium animate-pulse">Loading user database...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center">
-            <Users className="mr-3 h-6 w-6 text-blue-600" />
-            User Management
-          </h1>
-          <p className="text-slate-500 mt-1">Manage system access and roles</p>
-        </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center shadow-sm"
-        >
-          <UserPlus className="mr-2 h-4 w-4" />
-          Add User
-        </button>
-      </div>
-
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
-          {error}
-        </div>
-      )}
-
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <table className="min-w-full divide-y divide-slate-200">
-          <thead className="bg-slate-50">
-            <tr>
-              <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Name</th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Email</th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Role</th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-4 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-slate-200">
-            {users.map((u) => (
-              <tr key={u.id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-semibold">
-                      {u.name.charAt(0)}
-                    </div>
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-slate-900">{u.name}</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-slate-500 flex items-center">
-                    <Mail className="mr-2 h-4 w-4 text-slate-400" />
-                    {u.email}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    <Shield className="mr-1 h-3 w-3" />
-                    {u.role}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="inline-flex items-center text-sm text-green-600">
-                    <CheckCircle className="mr-1 h-4 w-4" />
-                    {u.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  {user.id !== u.id && (
-                    <button
-                      onClick={() => handleDeleteUser(u.id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {showModal && (
-        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-            <h3 className="text-lg font-bold text-slate-900 mb-4">Create New User</h3>
-            <form onSubmit={handleCreateUser} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700">Full Name</label>
-                <input
-                  type="text"
-                  required
-                  value={form.name}
-                  onChange={e => setForm({...form, name: e.target.value})}
-                  className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700">Email</label>
-                <input
-                  type="email"
-                  required
-                  value={form.email}
-                  onChange={e => setForm({...form, email: e.target.value})}
-                  className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700">Password</label>
-                <input
-                  type="password"
-                  required
-                  value={form.password}
-                  onChange={e => setForm({...form, password: e.target.value})}
-                  className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700">Role</label>
-                <select
-                  value={form.role}
-                  onChange={e => setForm({...form, role: e.target.value})}
-                  className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
-                >
-                  <option>Fleet Manager</option>
-                  <option>Dispatcher</option>
-                  <option>Safety Officer</option>
-                  <option>Financial Analyst</option>
-                </select>
-              </div>
-              <div className="flex justify-end gap-3 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
-                >
-                  Create User
-                </button>
-              </div>
-            </form>
+    <div className="app-container min-h-screen bg-[var(--bg)] text-[var(--text-main)] animate-fade">
+      <div className="app-content max-w-6xl mx-auto py-10 px-6">
+        
+        {/* Back Button and Header Section */}
+        <div className="mb-8">
+          <button 
+            onClick={() => navigate('/dashboard')}
+            className="btn btn-secondary mb-6 flex items-center gap-2 hover:translate-x-[-4px] transition-transform"
+          >
+            <ArrowLeft size={16} />
+            <span>Back to Dashboard</span>
+          </button>
+          
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-extrabold tracking-tight text-[var(--text-header)] flex items-center gap-3">
+                <Users className="text-[var(--primary)]" size={32} />
+                User Management
+              </h1>
+              <p className="text-[var(--text-muted)] mt-1">Create, assign roles, and manage credentials for system users</p>
+            </div>
+            
+            <button
+              onClick={() => setShowModal(true)}
+              className="btn btn-primary flex items-center gap-2 self-start sm:self-auto"
+            >
+              <UserPlus size={18} />
+              <span>Add System User</span>
+            </button>
           </div>
         </div>
-      )}
+
+        {error && (
+          <div className="form-error-banner flex items-center gap-2">
+            <span>⚠️</span>
+            <span>{error}</span>
+          </div>
+        )}
+
+        {/* Users Table */}
+        <div className="table-container">
+          <table className="responsive-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((u) => (
+                <tr key={u.id}>
+                  <td>
+                    <div className="driver-avatar-cell">
+                      <div className="driver-avatar">
+                        {u.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="cell-bold">{u.name}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="flex items-center gap-2 text-[var(--text-muted)]">
+                      <Mail size={14} />
+                      <span>{u.email}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span className="badge badge-dispatched flex items-center gap-1 w-fit">
+                      <Shield size={12} />
+                      {u.role}
+                    </span>
+                  </td>
+                  <td>
+                    <span className="badge badge-available flex items-center gap-1 w-fit">
+                      <span className="badge-dot"></span>
+                      {u.status || 'Active'}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="action-btns-group justify-end" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      {user.id !== u.id ? (
+                        <button
+                          onClick={() => handleDeleteUser(u.id)}
+                          className="icon-btn icon-btn-danger"
+                          title="Delete User"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      ) : (
+                        <span className="text-xs text-[var(--text-muted)] italic px-2">Current Session</span>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Modal popup for adding a new user */}
+        {showModal && (
+          <div className="modal-overlay">
+            <div className="modal-content animate-scale">
+              <div className="modal-header">
+                <h3 className="modal-title flex items-center gap-2">
+                  <UserPlus className="text-[var(--primary)]" size={22} />
+                  Create New User
+                </h3>
+                <button className="modal-close-btn" onClick={() => setShowModal(false)}>
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <form onSubmit={handleCreateUser}>
+                <div className="modal-body">
+                  <div className="form-group">
+                    <label className="form-label">Full Name</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Jane Doe"
+                      value={form.name}
+                      onChange={e => setForm({...form, name: e.target.value})}
+                      className="form-control"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label className="form-label">Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="name@transitops.com"
+                      value={form.email}
+                      onChange={e => setForm({...form, email: e.target.value})}
+                      className="form-control"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label className="form-label">Temporary Password</label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="••••••••"
+                      value={form.password}
+                      onChange={e => setForm({...form, password: e.target.value})}
+                      className="form-control"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label className="form-label">System Role Access</label>
+                    <select
+                      value={form.role}
+                      onChange={e => setForm({...form, role: e.target.value})}
+                      className="form-control"
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <option>Fleet Manager</option>
+                      <option>Dispatcher</option>
+                      <option>Safety Officer</option>
+                      <option>Financial Analyst</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div className="modal-footer">
+                  <button 
+                    type="button" 
+                    onClick={() => setShowModal(false)}
+                    className="btn btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="btn btn-primary"
+                  >
+                    Create User
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+        
+      </div>
     </div>
   );
 }
